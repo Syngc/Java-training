@@ -42,6 +42,18 @@ public class LambdaSuite {
     }
 
     @Test
+    public void usarUnaInterfaceFuncional12(){
+
+        InterfaceDeEjemplo i = (x,y)->x*y;
+
+        ClaseDeEjemplo instancia = new ClaseDeEjemplo();
+
+        int resultado = instancia.metodoDeEjemplo1(1,i);
+
+        assertTrue(resultado==3);
+    }
+
+    @Test
     public void usarUnaInterfaceFuncional2(){
 
         BiFunction<Integer, Integer, Integer> f = (x, y) -> new Integer(x.intValue()+y.intValue());
@@ -51,6 +63,18 @@ public class LambdaSuite {
         int resultado = instancia.metodoDeEjemplo2(1,f);
 
         assertTrue(resultado==4);
+    }
+
+    @Test
+    public void usarUnaInterfaceFuncional22(){
+
+        BiFunction<Integer, Integer, Integer> f = (x, y) -> new Integer(x.intValue()%y.intValue());
+
+        ClaseDeEjemplo instancia = new ClaseDeEjemplo();
+
+        int resultado = instancia.metodoDeEjemplo2(1,f);
+
+        assertTrue(resultado==2);
     }
 
     class ClaseDeEjemplo2{
@@ -69,6 +93,18 @@ public class LambdaSuite {
 
         assertEquals(3,resultado);
     }
+/*
+    @Test
+    public void usarUnaFuncionConTiposPrimitivos2(){
+        IntBinaryOperator f = (x, y) -> x + y;
+
+        ClaseDeEjemplo2 instancia = new ClaseDeEjemplo2();
+
+        int resultado = instancia.metodoDeEjemplo2( 1.7976931348623157E306,2,f);
+
+        assertEquals(3,resultado);
+    }
+*/
 
     class ClaseDeEjemplo3{
 
@@ -115,6 +151,24 @@ public class LambdaSuite {
 
         instancia.operarConConsumer(c1);
 
+    }
+
+    class ClaseDeEjemplo5{
+
+        public void operarConConsumer(Consumer<Integer> c, int y){
+            c.accept(y);
+        }
+    }
+
+    @Test
+    public void usarUnaFuncionConConsumerClase5(){
+        Consumer<Integer> c1 = x -> {
+            System.out.println("Me han entregado este valor: "+x);
+        };
+
+        ClaseDeEjemplo5 instancia = new ClaseDeEjemplo5();
+
+        instancia.operarConConsumer(c1,9);
 
     }
 
