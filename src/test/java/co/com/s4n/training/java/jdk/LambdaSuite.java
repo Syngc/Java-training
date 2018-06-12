@@ -172,4 +172,29 @@ public class LambdaSuite {
 
     }
 
+    @FunctionalInterface
+    interface InterfaceDeMiEjemplo{
+        Consumer<Integer> metodoDeMiEjemplo(Supplier<Integer> a, Supplier<Integer> b, Supplier<Integer> c );
+    }
+
+
+    @Test
+    public void miTest(){
+        InterfaceDeMiEjemplo miInterface = (a,b,c) ->{
+            Consumer<Integer> c1 = n -> {
+                int ans = a.get() + b.get() + c.get() + n;
+                System.out.println("La suma es: " + ans);
+            };
+            return c1;
+        };
+
+        Supplier a = () -> 1;
+        Supplier b = () -> 1;
+        Supplier c = () -> 1;
+
+        Consumer<Integer> consumer = miInterface.metodoDeMiEjemplo(a,b,c);
+        consumer.accept(new Integer(9));
+
+    }
+
 }
