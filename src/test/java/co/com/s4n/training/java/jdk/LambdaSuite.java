@@ -194,7 +194,63 @@ public class LambdaSuite {
 
         Consumer<Integer> consumer = miInterface.metodoDeMiEjemplo(a,b,c);
         consumer.accept(new Integer(9));
-
     }
 
+    @FunctionalInterface
+    interface interfaceString{
+        String functionString(Supplier<String> mensaje, Supplier<String> nombre);
+    }
+
+    @Test
+    public void testString(){
+        interfaceString fs = (mens,nom) -> mens.get() + " " + nom.get();
+
+        Supplier<String> a = () -> "Hola";
+        Supplier<String> b = () -> "Mundo";
+
+        String ans = fs.functionString(a,b);
+        System.out.println(ans);
+    }
+
+    @Test
+    public void ejemploConsumer(){
+        int x = 99;
+        Consumer consumer = y -> {
+            System.out.println("X es " + x);
+            System.out.println("y es " + y);
+        };
+
+        consumer.accept(x);
+    }
+
+    @FunctionalInterface
+    interface ejemploParametros{
+        int metodoParametros(int x, int y);
+    }
+
+
+    class claseParametros{
+            public int metodoClase(int x, ejemploParametros y ){
+                return x + y.metodoParametros(3,5);
+            }
+    }
+
+    @Test
+    public void testParametro(){
+        ejemploParametros ep1 = (x,y) -> {
+            return x*y;
+        };
+
+        ejemploParametros ep2 = (x,y) -> {
+            return x+y;
+        };
+
+        claseParametros cp = new claseParametros();
+        int ans1 = cp.metodoClase(2,ep1);
+        int ans2 = cp.metodoClase(2,ep2);
+
+        assertEquals(17,ans1);
+        assertEquals(10,ans2);
+
+    }
 }
