@@ -271,6 +271,29 @@ public class CompletableFutureSuite {
     }
 
     @Test
+    public void testEnlaceConSupplyAsync(){
+        ExecutorService es = Executors.newFixedThreadPool(1);
+        CompletableFuture f = CompletableFuture.supplyAsync(()-> "Hi", es);
+
+
+        CompletableFuture f2 = f.supplyAsync(() -> {
+            impMensaje("t11 ejecutando a");
+            sleep(500);
+            return "a";
+        }, es).supplyAsync(()->{
+            impMensaje("t11 Ejecutando b ");
+            return "b";
+
+        }, es);
+
+        try{
+
+        }catch (Exception e){
+            assertFalse(false);
+        }
+    }
+
+    @Test
     public void t11(){
 
         String testName = "t11";
@@ -290,6 +313,29 @@ public class CompletableFutureSuite {
                     },
                     es
                 );
+
+    }
+
+    @Test
+    public void TestApplyAsync(){
+
+        String testName = "TestApply - ";
+        ExecutorService es = Executors.newFixedThreadPool(2);
+        impMensaje(testName + "hilo principal ejecutado en " + Thread.currentThread().getName());
+        CompletableFuture f = CompletableFuture
+                .supplyAsync(()->{
+                    impMensaje(testName + " supply 1 en " + Thread.currentThread().getName());
+                    return "1";
+                },es)
+                .supplyAsync(()->{
+                    sleep(500);
+                    impMensaje(testName + " supply 2 en " + Thread.currentThread().getName());
+                    return "2";
+                }, es)
+                .supplyAsync(()->{
+                    impMensaje(testName + " supply 3 en " + Thread.currentThread().getName());
+                    return "3";
+                },es);
 
     }
 
