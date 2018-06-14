@@ -424,6 +424,13 @@ public class StreamsSuite {
 
         System.out.println("persona:" + persona.name);
     }
+
+
+
+    @Test
+    public void collectingStudents(){
+
+    }
     //Reduce
     //ParalellStreams
     //https://dzone.com/articles/think-twice-using-java-8
