@@ -230,6 +230,41 @@ public class CompletableFutureSuite {
         }
     }
 
+    class Persona{
+        String nombre;
+        int edad;
+        Persona(String nombre , int edad){
+            this.nombre = nombre;
+            this.edad = edad;
+        }
+    }
+
+    @Test
+    public void ejemploPersona(){
+        CompletableFuture<Persona> completableFuturePersona = CompletableFuture
+                .supplyAsync(() -> {
+                    return "cynthia.22";
+                })
+                .thenCompose(s -> {
+                    int index = s.indexOf(".");
+                    int tam = s.length();
+                    String nombre = s.substring(0,index);
+                    String edadString = s.substring(index+1,s.length());
+                    int edad = Integer.parseInt(edadString);
+                    return CompletableFuture.supplyAsync(() -> {
+                        Persona persona = new Persona(nombre, edad);
+                        return persona;
+                    });
+                });
+        try{
+            Persona persona = completableFuturePersona.get();
+            assertEquals("cynthia", persona.nombre);
+            assertEquals(22,persona.edad);
+        }catch (Exception e){
+            assertTrue(false);
+        }
+    }
+
     @Test
     public void t9(){
 
