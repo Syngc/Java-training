@@ -351,10 +351,10 @@ public class CompletableFutureSuite {
 
     }
 
-    @Test
-    public void TestApplyAsync(){
+   /* @Test
+    public void TestSupplyAsync(){
 
-        String testName = "TestApply - ";
+        String testName = "TestSupply - ";
         ExecutorService es = Executors.newFixedThreadPool(2);
         impMensaje(testName + "hilo principal ejecutado en " + Thread.currentThread().getName());
         CompletableFuture f = CompletableFuture
@@ -370,7 +370,43 @@ public class CompletableFutureSuite {
                 .supplyAsync(()->{
                     impMensaje(testName + " supply 3 en " + Thread.currentThread().getName());
                     return "3";
-                },es);
+                }, es);
+
+    }*/
+
+    @Test
+    public void TestThenApplyAsync(){
+
+        String testName = "TestApply - ";
+        ExecutorService es = Executors.newFixedThreadPool(2);
+        impMensaje(testName + "hilo principal ejecutado en " + Thread.currentThread().getName());
+
+
+        CompletableFuture f = CompletableFuture
+                .supplyAsync(()->{
+                    impMensaje(testName + " supply 0 en " + Thread.currentThread().getName());
+                    return "0";
+                },es )
+                .thenApplyAsync(s ->{
+                    sleep(1000);
+                    impMensaje(testName + " apply 1 en " + Thread.currentThread().getName());
+                    return s+"1";
+                },es)
+                .thenApplyAsync(s ->{
+                    sleep(500);
+                    impMensaje(testName + " apply 2 en " + Thread.currentThread().getName());
+                    return s+"2";
+                }, es)
+                .thenApplyAsync(s ->{
+                    impMensaje(testName + " apply 3 en " + Thread.currentThread().getName());
+                    return s+"3";
+                }, es);
+        try{
+            String x = (String) f.get();
+            assertEquals("0123", x);
+        }catch(Exception e){
+            assertTrue(false);
+        }
 
     }
 
