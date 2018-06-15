@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import co.com.s4n.training.java.Operaciones;
 import io.vavr.CheckedFunction1;
 import io.vavr.CheckedFunction2;
 import io.vavr.Function1;
@@ -12,8 +13,8 @@ import static junit.framework.TestCase.assertEquals;
 import io.vavr.PartialFunction;
 import java.util.ArrayList;
 import java.util.stream.Stream;
-
-import java.util.List;
+import io.vavr.collection.List;
+//import java.util.List;
 import java.util.function.Consumer;
 import static io.vavr.control.Try.failure;
 import static org.junit.Assert.assertNotEquals;
@@ -260,6 +261,7 @@ public class TrySuite {
      * La funcionalidad peek permite realizar una acción dependiendo de
      * una condición.
      */
+    /*
     @Test
     public void testErrorPeek() {
         final List<String> tmp = new ArrayList<>();
@@ -273,12 +275,13 @@ public class TrySuite {
         assertEquals("Failure - it should not add the element",
                 true,
                 tmp.isEmpty());
-    }
+    }*/
 
     /**
      * La funcionalidad peek permite realizar una acción dependiendo de
      * una condición.
      */
+    /*
     @Test
     public void testSuccessPeek() {
         final List<String> tmp = new ArrayList<>();
@@ -292,7 +295,7 @@ public class TrySuite {
         assertEquals("Failure - it should add the element",
                 "element",
                 tmp.get(0));
-    }
+    }*/
 
     /**
      * Validar el uso de Map para transformar un Try de String en otro String con mas informacion
@@ -424,6 +427,36 @@ public class TrySuite {
                 For(sumar(r0, r0), r1 ->
                         For(sumar(r1, -6), r2 -> dividirRecoverWith(0, 0)))).toTry();
         assertEquals(Success(-1), n);
+    }
+
+    //Ejercicio Try
+
+    @Test
+    public void ejercicioFlagMap(){
+        String x = "Hi";
+        Try<List<String>> r1 = Try.of(() -> Operaciones.reemplazar(x, "H", "A")).recover(Exception.class, e -> "*")
+                .flatMap(a ->Try.of(()->  Operaciones.reemplazar(a,"i","l")).recover(Exception.class, e -> "*")
+                        .flatMap(b -> Try.of(() -> Operaciones.concatenar(b, "o")).recover(Exception.class, e -> "~")
+                                .flatMap(c -> Try.of(() -> Operaciones.concatenar(c, "h")).recover(Exception.class, e -> "~")
+                                        .flatMap(d -> Try.of(() -> Operaciones.concatenar(d, "a")).recover(Exception.class, e -> "~")
+                                        .flatMap(e -> Try.of(() ->Operaciones.agregar(List.of(e)," Mundo")))))));
+
+        Try<String> r2 = Try.of(() -> Operaciones.concatenar("", "")).recover(Exception.class, e -> "empty");
+        assertEquals(Try.of(()-> List.of("Aloha"," Mundo")),r1);
+    }
+
+    @Test
+    public void ejercicioFlagMapException(){
+        String x = "Hi";
+        Try<List<String>> r1 = Try.of(() -> Operaciones.reemplazar(x, "H", ""))
+                .flatMap(a ->Try.of(()->  Operaciones.reemplazar(a,"",""))
+                        .flatMap(b -> Try.of(() -> Operaciones.concatenar(b, "o"))
+                                .flatMap(c -> Try.of(() -> Operaciones.concatenar(c, "h"))
+                                        .flatMap(d -> Try.of(() -> Operaciones.concatenar(d, "a"))
+                                                .flatMap(e -> Try.of(() ->Operaciones.agregar(List.of(e)," Mundo"))))))).recover(Exception.class, e -> List.of(""));
+
+        Try<String> r2 = Try.of(() -> Operaciones.concatenar("", "")).recover(Exception.class, e -> "empty");
+        assertEquals(Try.of(()-> List.of("A*oha"," Mundo")),r1);
     }
 
 }
