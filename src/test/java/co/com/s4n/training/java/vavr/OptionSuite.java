@@ -70,6 +70,7 @@ public class OptionSuite {
      * el metodo peek aplica una funcion lambda o un metodo con el valor de Option cuando esta definido
      * este metodo se usa para efectos colaterales y retorna el mismo Option que lo llamó
      */
+    
     /*@Test
     Se debe utilizar la clase List de Java
     public void testPeekMethod(){
@@ -212,7 +213,7 @@ public class OptionSuite {
         Option option = Option.ofOptional(optional);
     }
 
-    Option<Integer> esPar(int i){
+    private Option<Integer> esPar(int i){
         return (i%2==0)?Some(i):None();
     }
 
@@ -284,27 +285,27 @@ public class OptionSuite {
     }
 
     //Reemplazar
-   /* @Test
+    @Test
     public void testReemplazar(){
-        Option<String> c = Operaciones.reemplazar("Hola", 'H','P');
+        Option<String> c = Operaciones.reemplazar("Hola", "H","P");
         assertEquals("Pola",c.getOrElse("No concatena"));
     }
 
     @Test
     public void testReemplazarVacio(){
-        Option<String> c = Operaciones.reemplazar("Hola", 'a',' ');
+        Option<String> c = Operaciones.reemplazar("Hola", "a"," ");
         assertEquals("Uno de los strings es vacio",c.getOrElse("Uno de los strings es vacio"));
     }
 
     @Test
-    public void testReemplazarFlatmap(){
+    public void testReemplazarFlatmap() {
         Option<String> res =
-                Operaciones.reemplazar("Sol","S","L")
-                        .flatMap(a -> Operaciones.reemplazar(a,'o','u'))
-                        .flatMap(b -> Operaciones.reemplazar(b,'l','n'))
-                        .flatMap(c -> Operaciones.concatenar(c,"a"));
+                Operaciones.reemplazar("Sol", "S", "L")
+                        .flatMap(a -> Operaciones.reemplazar(a, "o", "u"))
+                        .flatMap(b -> Operaciones.reemplazar(b, "l", "n"))
+                        .flatMap(c -> Operaciones.concatenar(c, "a"));
         assertEquals("Luna", res.getOrElse("Brilla brilla"));
-    }*/
+    }
 
     @Test
     public void testReemplazarFlatmapNone(){
