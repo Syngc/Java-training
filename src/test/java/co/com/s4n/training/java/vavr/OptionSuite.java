@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import co.com.s4n.training.java.Operaciones;
 import org.junit.Test;
 
 
@@ -14,13 +15,16 @@ import java.util.ArrayList;
 import static io.vavr.API.*;
 import static io.vavr.Patterns.$None;
 import static io.vavr.Patterns.$Some;
+import io.vavr.collection.List;
 
-import java.util.List;
+//import java.util.List;
 import java.util.Optional;
 
 import static io.vavr.API.Some;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+
 
 public class OptionSuite {
 
@@ -66,10 +70,11 @@ public class OptionSuite {
      * el metodo peek aplica una funcion lambda o un metodo con el valor de Option cuando esta definido
      * este metodo se usa para efectos colaterales y retorna el mismo Option que lo llamó
      */
-    @Test
+    /*@Test
+    Se debe utilizar la clase List de Java
     public void testPeekMethod(){
         Option<String> defined_option = Option.of("Hello!");
-        /* Se debe utilizar una variable mutable para reflejar los efectos colaterales*/
+        *//* Se debe utilizar una variable mutable para reflejar los efectos colaterales*//*
         final List<String> list = new ArrayList<>();
         Option<String> peek = defined_option.peek(list::add);// the same as defined_option.peek(s -> list.add(s))
 
@@ -82,7 +87,7 @@ public class OptionSuite {
         assertEquals("failed - peek did not apply the side effect",
                 "Hello!",
                 list.get(0));
-    }
+    }*/
 
     /**
      * Un option se puede transformar dada una función
@@ -223,4 +228,199 @@ public class OptionSuite {
                                    For(esPar(4), c -> Option(d+c))).toOption();
         assertEquals(integers,Some(6));
     }
+
+    //Ejercicio con Optional
+
+    //Concatenar
+    @Test
+    public void testConcatenar(){
+        Option<String> c = Operaciones.concatenar("Hola", "Mundo");
+        assertEquals("HolaMundo",c.getOrElse("No concatena"));
+    }
+
+    @Test
+    public void testConcatenarVacio(){
+        Option<String> c = Operaciones.concatenar("Hola", "");
+        assertEquals("Uno de los strings es vacio",c.getOrElse("Uno de los strings es vacio"));
+    }
+
+    @Test
+    public void testConcatenarFlatmap(){
+        Option<String> res =
+                Operaciones.concatenar("A","l")
+                        .flatMap(a -> Operaciones.concatenar(a,"o"))
+                        .flatMap(b -> Operaciones.concatenar(b,"h"))
+                        .flatMap(c -> Operaciones.concatenar(c,"a"));
+        assertEquals("Aloha", res.getOrElse("Adiós"));
+    }
+
+    @Test
+    public void testConcatenarFlatmapNone(){
+        Option<String> res =
+                Operaciones.concatenar("A","l")
+                        .flatMap(a -> Operaciones.concatenar(a,""))
+                        .flatMap(b -> Operaciones.concatenar(b,"h"))
+                        .flatMap(c -> Operaciones.concatenar(c,"a"));
+        assertEquals("Adiós", res.getOrElse("Adiós"));
+    }
+
+    @Test
+    public void testConcatenarFor(){
+        Option<String> res =
+                For(Operaciones.concatenar("A","l"), a ->
+                For(Operaciones.concatenar(a,"o"),b ->
+                For(Operaciones.concatenar(b,"h"),c -> (Operaciones.concatenar(c,"a"))))).toOption();
+        assertEquals("Aloha",res.getOrElse("Adiós"));
+
+    }
+
+    @Test
+    public void testConcatenarForNone(){
+        Option<String> res =
+                For(Operaciones.concatenar("A","l"), a ->
+                For(Operaciones.concatenar(a,""),b ->
+                For(Operaciones.concatenar(b,"h"),c -> (Operaciones.concatenar(c,"a"))))).toOption();
+        assertEquals("Adiós",res.getOrElse("Adiós"));
+    }
+
+    //Reemplazar
+   /* @Test
+    public void testReemplazar(){
+        Option<String> c = Operaciones.reemplazar("Hola", 'H','P');
+        assertEquals("Pola",c.getOrElse("No concatena"));
+    }
+
+    @Test
+    public void testReemplazarVacio(){
+        Option<String> c = Operaciones.reemplazar("Hola", 'a',' ');
+        assertEquals("Uno de los strings es vacio",c.getOrElse("Uno de los strings es vacio"));
+    }
+
+    @Test
+    public void testReemplazarFlatmap(){
+        Option<String> res =
+                Operaciones.reemplazar("Sol","S","L")
+                        .flatMap(a -> Operaciones.reemplazar(a,'o','u'))
+                        .flatMap(b -> Operaciones.reemplazar(b,'l','n'))
+                        .flatMap(c -> Operaciones.concatenar(c,"a"));
+        assertEquals("Luna", res.getOrElse("Brilla brilla"));
+    }*/
+
+    @Test
+    public void testReemplazarFlatmapNone(){
+        Option<String> res =
+                Operaciones.reemplazar("Sol","S","L")
+                        .flatMap(a -> Operaciones.reemplazar(a,"o"," "))
+                        .flatMap(b -> Operaciones.reemplazar(b,"l"," "))
+                        .flatMap(c -> Operaciones.concatenar(c,"a"));
+        assertEquals("Brilla brilla", res.getOrElse("Brilla brilla"));
+    }
+
+    @Test
+    public void testReemplazarFor(){
+        Option<String> res =
+                For(Operaciones.reemplazar("Sol","S","L"), a ->
+                For(Operaciones.reemplazar(a,"o","u"),b ->
+                For(Operaciones.reemplazar(b,"l","n"),c -> (Operaciones.concatenar(c,"a"))))).toOption();
+        assertEquals("Luna",res.getOrElse("Brilla brilla"));
+
+    }
+
+    @Test
+    public void testReemplazarForNone(){
+        Option<String> res =
+                For(Operaciones.reemplazar("Sol","S","L"), a ->
+                For(Operaciones.reemplazar(a,"o"," "),b ->
+                For(Operaciones.reemplazar(b,"l","n"),c -> (Operaciones.concatenar(c,"a"))))).toOption();
+        assertEquals("Brilla brilla",res.getOrElse("Brilla brilla"));
+    }
+
+    //Agregar
+    @Test
+    public void testAgregar(){
+        List<String> lista = List.of();
+        Option<List<String>> c = Operaciones.agregar(lista, "Hola");
+        assertEquals(List.of("Hola"),c.getOrElse(List.of("Adiós")));
+    }
+
+    @Test
+    public void testAgregarVacio(){
+        List<String> lista = List.of();
+        Option<List<String>> c = Operaciones.agregar(lista, "");
+        assertEquals(List.of("Adiós"),c.getOrElse(List.of("Adiós")));
+    }
+
+    @Test
+    public void testAgregarWhiteSpace(){
+        List<String> lista = List.of();
+        Option<List<String>> c = Operaciones.agregar(lista, " ");
+        assertEquals(List.of("Adiós"),c.getOrElse(List.of("Adiós")));
+    }
+
+    @Test
+    public void testAgregarFlatmap(){
+        List<String> lista = List.of();
+        Option<List<String>> res =
+                Operaciones.agregar(lista,"Buenos")
+                        .flatMap(a -> Operaciones.agregar(a," días"))
+                        .flatMap(b -> Operaciones.agregar(b," todos"));
+        assertEquals(List.of("Buenos"," días"," todos"), res.getOrElse(List.of()));
+    }
+
+    @Test
+    public void testAgregarFlatmapNone(){
+        List<String> lista = List.of();
+        Option<List<String>> res =
+                Operaciones.agregar(lista,"Buenos")
+                        .flatMap(a -> Operaciones.agregar(a," "))
+                        .flatMap(b -> Operaciones.agregar(b," todos"));
+        assertEquals(List.of(), res.getOrElse(List.of()));
+        }
+
+    @Test
+    public void testAgregarFor(){
+        List<String> lista = List.of();
+        Option<List<String>> res =
+                For(Operaciones.agregar(lista,"Buenos"), a ->
+                For(Operaciones.agregar(a," días"),b -> Operaciones.agregar(b," todos"))).toOption();
+        assertEquals(List.of("Buenos"," días"," todos"),res.getOrElse(List.of("Bye"," bye")));
+    }
+
+    @Test
+    public void testAgregarForNone(){
+        List<String> lista = List.of();
+        Option<List<String>> res =
+                For(Operaciones.agregar(lista,"Buenos"), a ->
+                For(Operaciones.agregar(a," "),b -> Operaciones.agregar(b," todos"))).toOption();
+        assertEquals(List.of("Bye"," bye"),res.getOrElse(List.of("Bye"," bye")));
+    }
+
+    //Todos
+    @Test
+    public void testFlagMap(){
+        String palabra = "Hi";
+        Option<List<String>> res =
+                Operaciones.reemplazar(palabra,"H","A")
+                    .flatMap(a -> Operaciones.reemplazar(a,"i","l"))
+                    .flatMap(b -> Operaciones.concatenar(b,"o"))
+                    .flatMap(c -> Operaciones.concatenar(c,"h"))
+                    .flatMap(d -> Operaciones.concatenar(d,"a"))
+                    .flatMap(e -> Operaciones.agregar(List.of(e)," mundo"));
+
+        assertEquals(List.of("Aloha"," mundo"), res.getOrElse(List.of()));
+    }
+
+    @Test
+    public void testFor(){
+        String palabra = "Hi";
+        Option<List<String>> res =
+                        For(Operaciones.reemplazar(palabra,"H","A"), a ->
+                        For(Operaciones.reemplazar(a,"i","l"), b ->
+                        For(Operaciones.concatenar(b,"o"), c ->
+                        For(Operaciones.concatenar(c,"h"), d ->
+                        For(Operaciones.concatenar(d,"a"), e -> (Operaciones.agregar(List.of(e)," mundo"))))))).toOption();
+
+        assertEquals(List.of("Aloha"," mundo"), res.getOrElse(List.of()));
+    }
+
 }
