@@ -323,7 +323,7 @@ public class OptionSuite {
                 For(sumar(r1, 1), r2 ->
                 For(sumar(r2, 1), r3 -> (sumar(r3, 1))))).toOption();
 
-        assertEquals(res.getOrElse(666).intValue(), 6);
+        assertEquals(res.getOrElse(666).intValue(), 5);
     }
 
 
