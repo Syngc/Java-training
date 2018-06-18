@@ -1,6 +1,7 @@
 package co.com.s4n.training.java.vavr;
 
 import io.vavr.Function1;
+import io.vavr.Lazy;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
@@ -720,4 +721,35 @@ public class FutureSuite {
         assertEquals("Failure - Validate Future with Promise",new Integer(15),myFutureOne.get());
         assertFalse("Failure - Validate myFuture is not complete",myFuture.isCompleted());
     }
+
+    @Test
+    public void exercise(){
+        long in = System.nanoTime();
+
+        Future<Integer> f1 = Future.of(() -> {
+            Thread.sleep(500);
+            return 1;
+        });
+        Future<Integer> f2 = Future.of( () -> {
+            Thread.sleep(800);
+            return 2;
+        });
+        Future<Integer> f3 = Future.of(() -> {
+            Thread.sleep(300);
+            return 3;
+        });
+
+        long i = System.nanoTime();
+        Future<Integer> fut = f1.flatMap(x ->
+                                f2.flatMap(y ->
+                                  f3.flatMap(z -> Future.of(() -> x+y+z))));
+        fut.await();
+        long f = System.nanoTime();
+        double elapsed = (f - i) * Math.pow(10,-6) ;
+        System.out.println(elapsed);
+        assertEquals(800, elapsed,10);
+    }
+
+
+    
 }
