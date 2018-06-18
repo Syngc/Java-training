@@ -35,6 +35,7 @@ public class FutureSuite {
     // Max wait time for results = WAIT_MILLIS * WAIT_COUNT (however, most probably it will take only WAIT_MILLIS * 1)
     private static final long WAIT_MILLIS = 50;
     private static final int WAIT_COUNT = 100;
+
     private static void waitUntil(Supplier<Boolean> condition) {
         int count = 0;
         while (!condition.get()) {
@@ -75,6 +76,23 @@ public class FutureSuite {
         assertArrayEquals("The arrays are different", expected, futureSplit.get());
     }
 
+    @Test
+    public void testOnCompleteSuccess2() {
+        Future<String[]> futureSplit = Future.of(() -> "TEXT_TO_SPLIT".split("_"));
+        futureSplit.onComplete(res -> {
+            if (res.isSuccess()) {
+                for (int i = 0; i < res.get().length; i++) {
+                    res.get()[i] = res.get()[i].toLowerCase();
+                }
+            }
+        });
+        //futureSplit.await();
+        String[] expected = {"text", "to", "split"};
+        //Wait until we are sure that the second thread (onComplete) is done.
+        waitUntil(() -> futureSplit.get()[2].equals("split"));
+        assertArrayEquals("The arrays are different", expected, futureSplit.get());
+    }
+
     /**
      *Valida la funcion de find aplicando un predicado que viene de una implementacion de la clase Iterable que contenga Futuros
      * Tener encuenta el primero que cumpla con el predicado y sea Oncomplete es el que entrega
@@ -83,9 +101,10 @@ public class FutureSuite {
     public void testFutureToFind() {
         List<Future<Integer>> myLista = List.of( Future.of(() -> 5+4), Future.of(() -> 6+9), Future.of(() -> 31+1),Future.of(() -> 20+9));
 
-        Future<Option<Integer>> futureSome = Future.find(myLista, v -> v < 10);
-        Future<Option<Integer>> futureSomeM = Future.find(myLista, v -> v > 31);
-        Future<Option<Integer>> futureNone = Future.find(myLista, v -> v > 40);
+        Future<Option<Integer>> futureSome = Future.find(myLista, v -> v < 10); //
+        Future<Option<Integer>> futureSomeM = Future.find(myLista, v -> v > 31);//
+        Future<Option<Integer>> futureNone = Future.find(myLista, v -> v > 40);//
+
         assertEquals("Valide find in the List with Future", Some(9), futureSome.get());
         assertEquals("Valide find in the List with Future", Some(32), futureSomeM.get());
         assertEquals("Valide find in the List with Future", None(), futureNone.get());
@@ -126,11 +145,63 @@ public class FutureSuite {
      */
     @Test
     public void testFutureToMap() {
-        Future<Integer> myMap = Future.of( () -> "pedro").map(v -> v.length());
-        Future<Integer> myFlatMap = Future.of( () ->Future.of(() -> 5+9)).flatMap(v -> Future.of(()->v.await().getOrElse(15)));
+        //System.out.println(Thread.currentThread().getName());
+        Future<Integer> myMap = Future.of( () -> {
+            //System.out.println(Thread.currentThread().getName());
+            return "pedro";
+        })
+                .map(v -> {
+                    //System.out.println(Thread.currentThread().getName());
+                    return v.length();
+                }); //5
         assertEquals("validate map with future",new Integer(5),myMap.get());
+    }
+
+    @Test
+    public void testFutureToFlatMap() {
+        Future<Integer> myFlatMap = Future
+                .of( () -> Future.of(() -> 5+9))
+                .flatMap(v -> Future.of(()->v.getOrElse(15)));
         assertEquals("validate map with future",new Integer(14),myFlatMap.get());
     }
+
+    private static Future<Integer> sumar(Integer x, Integer y){
+        Integer n = new Integer(x + y);
+        Future<Integer> res = Future.of(() -> n);
+        return res;
+    }
+
+    private static Future<Integer> restar(Integer x, Integer y){
+        Integer n = new Integer(x - y);
+        Future<Integer> res = Future.of(() -> n);
+        return n > 0 ? res : Future.of(() -> {throw new Error("Menor que cero");});
+    }
+
+    @Test
+    public void testFlatMapExercise(){
+        Future<Integer> num = Future.of(() -> 1)
+                .flatMap(x -> sumar(x,2)//3
+                        .flatMap(y ->sumar(y,4) // 7
+                                .flatMap(z ->sumar(z,4) //11
+                                        .flatMap(w ->restar(w,4)) // 7
+                                )));
+        num.await();
+        assertEquals(new Integer(7), num.get());
+    }
+
+    @Test
+    public void testFlatMapExerciseFail(){
+        Future<Integer> num = Future.of(() -> 1)
+                .flatMap(x -> sumar(x,2)//3
+                        .flatMap(y ->restar(y,4) // -1
+                                .flatMap(z ->sumar(z,4) // 3
+                                        .flatMap(w ->sumar(w,4)) // 7
+                                )));
+        num.await();
+        assertTrue(num.isFailure());
+    }
+
+
 
     /**
      *Se valida el uso de foreach para el encademaient de futuros
