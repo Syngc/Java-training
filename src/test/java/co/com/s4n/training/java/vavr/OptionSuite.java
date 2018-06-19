@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import co.com.s4n.training.java.Operaciones;
 import org.junit.Test;
 
 
@@ -14,73 +15,18 @@ import java.util.ArrayList;
 import static io.vavr.API.*;
 import static io.vavr.Patterns.$None;
 import static io.vavr.Patterns.$Some;
+import io.vavr.collection.List;
 
-import java.util.List;
+//import java.util.List;
 import java.util.Optional;
 
 import static io.vavr.API.Some;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+
+
 public class OptionSuite {
-
-    @Test
-    public void testConstruction1(){
-        Option<Integer> o = Option(1);
-        assertTrue(o.isDefined());
-        assertEquals(o, Some(1));
-    }
-
-    @Test
-    public void testConstruction2(){
-        Option<Integer> o = Option(null);
-        assertEquals(o, Option.none());
-    }
-
-    private Boolean esParPosibleNull(int i){
-        Boolean res = null;
-        if(i%2 == 0)res=new Boolean(true);
-        return res;
-    }
-
-    @Test
-    public void testConstruction3(){
-        Option<Boolean> b = Option(esParPosibleNull(1));
-        assertEquals(b, Option.none());
-    }
-
-    private Integer identidadPosibleNull(int i){
-        Integer res = null;
-        if(i%2 == 0) res = new Integer(i);
-        return res;
-    }
-    @Test
-    public void testFilter(){
-        Option<Integer> b = Option(identidadPosibleNull(2));
-        Option<Integer> r = b.filter(x -> x.intValue() < 8);
-        assertEquals(r.getOrElse(666).intValue(), 2);
-    }
-
-    @Test
-    public void testFilterNone(){
-        Option<Integer> b = Option(identidadPosibleNull(1));
-        Option<Integer> r = b.filter(x -> x.intValue() < 1);
-        assertEquals(r, Option.none());
-    }
-
-    @Test
-    public void testMap(){
-        Option<Integer> o1 = Option(identidadPosibleNull(8));
-        Option<Integer> o2 = o1.map(x -> x - 8);
-        assertEquals(o2, Some(0));
-    }
-
-    @Test
-    public void testMapNone(){
-        Option<Integer> o1 = Option(identidadPosibleNull(3));
-        Option<Integer> o2 = o1.map(x -> x - 8);
-        assertEquals(o2, Option.none());
-    }
 
 
     /**
@@ -124,10 +70,12 @@ public class OptionSuite {
      * el metodo peek aplica una funcion lambda o un metodo con el valor de Option cuando esta definido
      * este metodo se usa para efectos colaterales y retorna el mismo Option que lo llamó
      */
-    @Test
+    
+    /*@Test
+    Se debe utilizar la clase List de Java
     public void testPeekMethod(){
         Option<String> defined_option = Option.of("Hello!");
-        /* Se debe utilizar una variable mutable para reflejar los efectos colaterales*/
+        *//* Se debe utilizar una variable mutable para reflejar los efectos colaterales*//*
         final List<String> list = new ArrayList<>();
         Option<String> peek = defined_option.peek(list::add);// the same as defined_option.peek(s -> list.add(s))
 
@@ -140,7 +88,7 @@ public class OptionSuite {
         assertEquals("failed - peek did not apply the side effect",
                 "Hello!",
                 list.get(0));
-    }
+    }*/
 
     /**
      * Un option se puede transformar dada una función
@@ -265,7 +213,7 @@ public class OptionSuite {
         Option option = Option.ofOptional(optional);
     }
 
-    Option<Integer> esPar(int i){
+    private Option<Integer> esPar(int i){
         return (i%2==0)?Some(i):None();
     }
 
@@ -282,62 +230,198 @@ public class OptionSuite {
         assertEquals(integers,Some(6));
     }
 
-    private Option<Integer> sumar(int a , int b){
-        System.out.println("sumando a " +a + " y " +b);
-        return Option.of(a+b);
-    }
+    //Ejercicio con Optional
 
-    private Option<Integer> restar(int a , int b){
-        return a>b ? Option.of(a-b) : None();
-    }
-
-
+    //Concatenar
     @Test
-    public void flatMapInOptionAdd(){
-        Option<Integer> res =
-                sumar(1, 1)
-                    .flatMap(a -> sumar(a, 1))
-                        .flatMap(b -> sumar(b, 1)
-                                .flatMap(c -> sumar(c, 1)
-                                        .flatMap(d -> sumar(d, 1)
-                                        )));
-        assertEquals(res.getOrElse(666).intValue(), 6);
+    public void testConcatenar(){
+        Option<String> c = Operaciones.concatenar("Hola", "Mundo");
+        assertEquals("HolaMundo",c.getOrElse("No concatena"));
     }
 
     @Test
-    public void flatMapInOptionSub(){
-        Option<Integer> res =
-                sumar(1, 1)
-                .flatMap(a -> sumar(a, 1))
-                        .flatMap(b -> restar(b, 4)
-                                .flatMap(c -> sumar(c, 1)
-                                        .flatMap(d -> sumar(d, 1)
-                                        )));
-        assertEquals(res.getOrElse(666).intValue(),666);
+    public void testConcatenarVacio(){
+        Option<String> c = Operaciones.concatenar("Hola", "");
+        assertEquals("Uno de los strings es vacio",c.getOrElse("Uno de los strings es vacio"));
     }
 
     @Test
-    public void flatMapInOptionWithFor(){
-        Option<Integer> res =
-                For(sumar(1, 1), r1 ->
-                For(sumar(r1, 1), r2 ->
-                For(sumar(r2, 1), r3 -> (sumar(r3, 1))))).toOption();
-
-        assertEquals(res.getOrElse(666).intValue(), 5);
+    public void testConcatenarFlatmap(){
+        Option<String> res =
+                Operaciones.concatenar("A","l")
+                        .flatMap(a -> Operaciones.concatenar(a,"o"))
+                        .flatMap(b -> Operaciones.concatenar(b,"h"))
+                        .flatMap(c -> Operaciones.concatenar(c,"a"));
+        assertEquals("Aloha", res.getOrElse("Adiós"));
     }
 
+    @Test
+    public void testConcatenarFlatmapNone(){
+        Option<String> res =
+                Operaciones.concatenar("A","l")
+                        .flatMap(a -> Operaciones.concatenar(a,""))
+                        .flatMap(b -> Operaciones.concatenar(b,"h"))
+                        .flatMap(c -> Operaciones.concatenar(c,"a"));
+        assertEquals("Adiós", res.getOrElse("Adiós"));
+    }
 
+    @Test
+    public void testConcatenarFor(){
+        Option<String> res =
+                For(Operaciones.concatenar("A","l"), a ->
+                For(Operaciones.concatenar(a,"o"),b ->
+                For(Operaciones.concatenar(b,"h"),c -> (Operaciones.concatenar(c,"a"))))).toOption();
+        assertEquals("Aloha",res.getOrElse("Adiós"));
 
-    /*@Test
-    public void flatMapInOption(){
-        Option<Integer> o1 = Option.of(1);
+    }
 
+    @Test
+    public void testConcatenarForNone(){
+        Option<String> res =
+                For(Operaciones.concatenar("A","l"), a ->
+                For(Operaciones.concatenar(a,""),b ->
+                For(Operaciones.concatenar(b,"h"),c -> (Operaciones.concatenar(c,"a"))))).toOption();
+        assertEquals("Adiós",res.getOrElse("Adiós"));
+    }
 
-        Option<Option<Integer>> m = o1.map(i -> Option.of(identidadPosibleNull(i - 3)));
+    //Reemplazar
+    @Test
+    public void testReemplazar(){
+        Option<String> c = Operaciones.reemplazar("Hola", "H","P");
+        assertEquals("Pola",c.getOrElse("No concatena"));
+    }
 
-        Option<Integer> y = o1
-                .flatMap(i -> Option.of(identidadPosibleNull(i - 3)))
-                .flatMap(r -> Option.of(identidadPosibleNull(r)));
+    @Test
+    public void testReemplazarVacio(){
+        Option<String> c = Operaciones.reemplazar("Hola", "a"," ");
+        assertEquals("Uno de los strings es vacio",c.getOrElse("Uno de los strings es vacio"));
+    }
 
-    }*/
+    @Test
+    public void testReemplazarFlatmap() {
+        Option<String> res =
+                Operaciones.reemplazar("Sol", "S", "L")
+                        .flatMap(a -> Operaciones.reemplazar(a, "o", "u"))
+                        .flatMap(b -> Operaciones.reemplazar(b, "l", "n"))
+                        .flatMap(c -> Operaciones.concatenar(c, "a"));
+        assertEquals("Luna", res.getOrElse("Brilla brilla"));
+    }
+
+    @Test
+    public void testReemplazarFlatmapNone(){
+        Option<String> res =
+                Operaciones.reemplazar("Sol","S","L")
+                        .flatMap(a -> Operaciones.reemplazar(a,"o"," "))
+                        .flatMap(b -> Operaciones.reemplazar(b,"l"," "))
+                        .flatMap(c -> Operaciones.concatenar(c,"a"));
+        assertEquals("Brilla brilla", res.getOrElse("Brilla brilla"));
+    }
+
+    @Test
+    public void testReemplazarFor(){
+        Option<String> res =
+                For(Operaciones.reemplazar("Sol","S","L"), a ->
+                For(Operaciones.reemplazar(a,"o","u"),b ->
+                For(Operaciones.reemplazar(b,"l","n"),c -> (Operaciones.concatenar(c,"a"))))).toOption();
+        assertEquals("Luna",res.getOrElse("Brilla brilla"));
+
+    }
+
+    @Test
+    public void testReemplazarForNone(){
+        Option<String> res =
+                For(Operaciones.reemplazar("Sol","S","L"), a ->
+                For(Operaciones.reemplazar(a,"o"," "),b ->
+                For(Operaciones.reemplazar(b,"l","n"),c -> (Operaciones.concatenar(c,"a"))))).toOption();
+        assertEquals("Brilla brilla",res.getOrElse("Brilla brilla"));
+    }
+
+    //Agregar
+    @Test
+    public void testAgregar(){
+        List<String> lista = List.of();
+        Option<List<String>> c = Operaciones.agregar(lista, "Hola");
+        assertEquals(List.of("Hola"),c.getOrElse(List.of("Adiós")));
+    }
+
+    @Test
+    public void testAgregarVacio(){
+        List<String> lista = List.of();
+        Option<List<String>> c = Operaciones.agregar(lista, "");
+        assertEquals(List.of("Adiós"),c.getOrElse(List.of("Adiós")));
+    }
+
+    @Test
+    public void testAgregarWhiteSpace(){
+        List<String> lista = List.of();
+        Option<List<String>> c = Operaciones.agregar(lista, " ");
+        assertEquals(List.of("Adiós"),c.getOrElse(List.of("Adiós")));
+    }
+
+    @Test
+    public void testAgregarFlatmap(){
+        List<String> lista = List.of();
+        Option<List<String>> res =
+                Operaciones.agregar(lista,"Buenos")
+                        .flatMap(a -> Operaciones.agregar(a," días"))
+                        .flatMap(b -> Operaciones.agregar(b," todos"));
+        assertEquals(List.of("Buenos"," días"," todos"), res.getOrElse(List.of()));
+    }
+
+    @Test
+    public void testAgregarFlatmapNone(){
+        List<String> lista = List.of();
+        Option<List<String>> res =
+                Operaciones.agregar(lista,"Buenos")
+                        .flatMap(a -> Operaciones.agregar(a," "))
+                        .flatMap(b -> Operaciones.agregar(b," todos"));
+        assertEquals(List.of(), res.getOrElse(List.of()));
+        }
+
+    @Test
+    public void testAgregarFor(){
+        List<String> lista = List.of();
+        Option<List<String>> res =
+                For(Operaciones.agregar(lista,"Buenos"), a ->
+                For(Operaciones.agregar(a," días"),b -> Operaciones.agregar(b," todos"))).toOption();
+        assertEquals(List.of("Buenos"," días"," todos"),res.getOrElse(List.of("Bye"," bye")));
+    }
+
+    @Test
+    public void testAgregarForNone(){
+        List<String> lista = List.of();
+        Option<List<String>> res =
+                For(Operaciones.agregar(lista,"Buenos"), a ->
+                For(Operaciones.agregar(a," "),b -> Operaciones.agregar(b," todos"))).toOption();
+        assertEquals(List.of("Bye"," bye"),res.getOrElse(List.of("Bye"," bye")));
+    }
+
+    //Todos
+    @Test
+    public void testFlagMap(){
+        String palabra = "Hi";
+        Option<List<String>> res =
+                Operaciones.reemplazar(palabra,"H","A")
+                    .flatMap(a -> Operaciones.reemplazar(a,"i","l"))
+                    .flatMap(b -> Operaciones.concatenar(b,"o"))
+                    .flatMap(c -> Operaciones.concatenar(c,"h"))
+                    .flatMap(d -> Operaciones.concatenar(d,"a"))
+                    .flatMap(e -> Operaciones.agregar(List.of(e)," mundo"));
+
+        assertEquals(List.of("Aloha"," mundo"), res.getOrElse(List.of()));
+    }
+
+    @Test
+    public void testFor(){
+        String palabra = "Hi";
+        Option<List<String>> res =
+                        For(Operaciones.reemplazar(palabra,"H","A"), a ->
+                        For(Operaciones.reemplazar(a,"i","l"), b ->
+                        For(Operaciones.concatenar(b,"o"), c ->
+                        For(Operaciones.concatenar(c,"h"), d ->
+                        For(Operaciones.concatenar(d,"a"), e -> (Operaciones.agregar(List.of(e)," mundo"))))))).toOption();
+
+        assertEquals(List.of("Aloha"," mundo"), res.getOrElse(List.of()));
+    }
+
 }
