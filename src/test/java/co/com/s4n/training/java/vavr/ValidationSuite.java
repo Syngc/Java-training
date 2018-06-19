@@ -6,18 +6,20 @@ import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.concurrent.Future;
 import io.vavr.control.Validation;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 import io.vavr.Function1;
 import io.vavr.control.Option;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
 import static io.vavr.concurrent.Future.fold;
-import static org.junit.Assert.assertEquals;
 
-import static org.junit.Assert.assertTrue;
-
+@RunWith(JUnitPlatform.class)
 public class ValidationSuite
 {
     class TestValidation {
@@ -83,8 +85,8 @@ public class ValidationSuite
 
         MyClass myClass = res.get();
 
-        assertTrue("ap should be valid",res.isValid());
-        assertEquals("La edad debe ser 15 en la clase instanciada ", myClass.age, "15");
+        assertTrue(res.isValid());
+        assertEquals( myClass.age, "15");
 
     }
 
@@ -93,19 +95,21 @@ public class ValidationSuite
      * y sin embargo todas las funciones se deben ejecutar.
      */
 
-    @Test(expected = java.util.NoSuchElementException.class)
+    @Test
     public void testValidation2() {
+        assertThrows(java.util.NoSuchElementException.class, () -> {
+            Validation<Seq<String>, MyClass> res=  Validation
+                    .combine(validateAge(13),
+                            validateAmount(15000))
+                    .ap(MyClass::new);
 
-        Validation<Seq<String>, MyClass> res=  Validation
-                .combine(validateAge(13),
-                        validateAmount(15000))
-                .ap(MyClass::new);
+            // Este acceso es inseguro porque no se sabe si fue valid o invalid.
+            // en este caso esto lanza una excepción. Esto significa que el accesor get sobre un Validation es INSEGURO!
+            MyClass myClass = res.get();
 
-        // Este acceso es inseguro porque no se sabe si fue valid o invalid.
-        // en este caso esto lanza una excepción. Esto significa que el accesor get sobre un Validation es INSEGURO!
-        MyClass myClass = res.get();
+            assertTrue(res.isInvalid());
+        });
 
-        assertTrue("ap should be invalid",res.isInvalid());
     }
 
     public void testValidation3() {
@@ -117,7 +121,7 @@ public class ValidationSuite
 
         Integer fold = res.fold(s -> 1, c -> 2);
 
-        assertTrue("ap should be invalid",res.isInvalid());
+        assertTrue(res.isInvalid());
         assertEquals(fold.intValue(), 1);
     }
 
@@ -154,7 +158,7 @@ public class ValidationSuite
 
         Validation<Seq<Error>, String> finalValidation = Validation.combine(valid, invalid , valid2).ap((v1,v2,v3) -> v1 + v2 + v3);
 
-        assertEquals("Failure - Combine with an invalid Validation didn't return the error",
+        assertEquals(
                 "Stop!",
                 finalValidation.getError().get(0).getMessage());
 
@@ -170,7 +174,7 @@ public class ValidationSuite
 
         Validation<Seq<Error>, String> finalValidation = Validation.combine(valid, invalid , valid2).ap((v1,v2,v3) -> v1 + v2 + v3);
 
-        assertEquals("Failure - Combine with an invalid Validation didn't return the error",
+        assertEquals(
                 "Stop!",
                 finalValidation.getError().get(0).getMessage());
 
@@ -201,7 +205,7 @@ public class ValidationSuite
                 .combine(valid, valid2, valid3)
                 .ap((v1, v2, v3) -> v1 + v2 + v3);
 
-        assertEquals("Failure - Combine validation doesn't apply the correspond function with the values",
+        assertEquals(
                 "Lets Go!",
                 finalValidation.get());
     }
@@ -218,7 +222,7 @@ public class ValidationSuite
                 .matches(EMAIL_REGEX)
                 ? Validation.valid(email)
                 : Validation.invalid("Email contains invalid characters");
-        assertTrue("The validator failed", validateEmail.isValid());
+        assertTrue( validateEmail.isValid());
     }
 
     /**
@@ -237,7 +241,7 @@ public class ValidationSuite
                 ? Validation.valid(value)
                 : Validation.invalid("The value is out of the defined bounds");
 
-        assertTrue("The validator was successful", validateBound.isInvalid());
+        assertTrue(validateBound.isInvalid());
     }
 
     /**
@@ -259,7 +263,7 @@ public class ValidationSuite
         Validation.Builder8<String, String, Integer, Option<String>, String, String, String, String, String> result8 =
                 Validation.combine(v1,v2,v3,v4,v5,v6,v7,v8);
 
-        assertEquals("Failure - ",
+        assertEquals(
                 "Valid(John Doe,39,address,111-111-1111,alt1,alt2,alt3,alt4)",
                 result8.ap(TestValidation::new).toString());
     }
@@ -303,7 +307,7 @@ public class ValidationSuite
             }
         };
         validation.forEach(consumer);
-        assertEquals("Failure- Was not operated",
+        assertEquals(
                 Arrays.asList("Operacion 0","Operacion 1","Operacion 2"),msg);
     }
 
@@ -335,8 +339,8 @@ public class ValidationSuite
         myClass2 c = new myClass2();
         Validation.Builder5<Error, String, String, String, String, String> combine = Validation.combine(c.esValido(v1), c.esValido(v2), c.esValido(v3), c.esValido(v4), c.esValido(v5));
 
-        assertEquals("EL numero de validos no coincide", new Integer(3), c.cont[0]);
-        assertEquals("EL numero de validos no coincide", new Integer(2), c.cont[1]);
+        assertEquals(new Integer(3), c.cont[0]);
+        assertEquals(new Integer(2), c.cont[1]);
     }
 
     /**
@@ -356,15 +360,15 @@ public class ValidationSuite
             }
         };
 
-        assertEquals("Failure - return some invalid",
+        assertEquals(
                 Validation.valid("18 this is part of flatmap"),
                 validatorValid.flatMap(s -> Validation.valid(s + " this is part of flatmap")));
 
-        assertEquals("Failure - someone is younger",
+        assertEquals(
                 Validation.valid("he is an adult"),
                 validatorValid.flatMap(s -> ageValidator.apply(s)));
 
-        assertEquals("Failure - the flatmap is Valid",
+        assertEquals(
                 Validation.invalid(new Error("Alert!")).toString(),
                 validatorInvalid.flatMap(s -> Validation.valid(s + "invalid flatmap")).toString());
     }

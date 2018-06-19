@@ -1,38 +1,18 @@
 package co.com.s4n.training.java.vavr;
 
-import io.vavr.Function1;
-import io.vavr.Lazy;
-import io.vavr.collection.List;
-import io.vavr.collection.Seq;
-import io.vavr.collection.Stream;
-import io.vavr.concurrent.Future;
-import io.vavr.control.Option;
-import io.vavr.control.Try;
-import io.vavr.concurrent.Promise;
-import org.junit.Test;
-import static io.vavr.API.$;
-import static io.vavr.API.Case;
-import static io.vavr.API.Match;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import static io.vavr.Predicates.instanceOf;
-import static io.vavr.Patterns.*;
+import io.vavr.Lazy;
+import io.vavr.concurrent.Future;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
-import java.util.function.Consumer;
-import static io.vavr.API.*;
-import static org.junit.Assert.assertNotEquals;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.*;
 import java.util.function.Supplier;
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.*;
 
-
+@RunWith(JUnitPlatform.class)
 public class LazySuite {
 
     @Test

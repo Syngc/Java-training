@@ -1,15 +1,19 @@
 package co.com.s4n.training.java.jdk;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+//import org.junit.Test;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import java.text.SimpleDateFormat;
 import java.util.concurrent.*;
 
+@RunWith(JUnitPlatform.class)
 public class CompletableFutureSuite {
 
     private void sleep(int milliseconds){

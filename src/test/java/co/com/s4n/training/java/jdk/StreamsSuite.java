@@ -1,10 +1,12 @@
 package co.com.s4n.training.java.jdk;
 
-import static org.junit.Assert.*;
 
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 import co.com.s4n.training.java.*;
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+@RunWith(JUnitPlatform.class)
 public class StreamsSuite {
     @Test
     public void smokeTest() {
@@ -97,7 +100,7 @@ public class StreamsSuite {
                 .map(n -> 2 * n + 1)
                 .average();
 
-        assertEquals(5D,average.orElseGet(()->666),0D);
+        assertEquals(5D,average.orElseGet(()->666));
 
     }
 
@@ -284,17 +287,20 @@ public class StreamsSuite {
 
     }
 
-    @Test(expected = java.lang.IllegalStateException.class)
+    @Test
     public void testStreams14() {
-        Stream<String> stream =
-                Stream.of("d2", "a2", "b1", "b3", "c")
-                        .filter(s -> s.startsWith("a"));
 
-        boolean b = stream.anyMatch(s -> true);
-        assertTrue(b);
+        assertThrows(IllegalStateException.class , () ->{
+            Stream<String> stream =
+                    Stream.of("d2", "a2", "b1", "b3", "c")
+                            .filter(s -> s.startsWith("a"));
+            boolean b = stream.anyMatch(s -> true);
+            assertTrue(b);
+            stream.noneMatch(s -> true);
+        });
 
         //Un stream no se puede volver a usar despues de haberse ejecutado una operacion final sobre el :(
-        stream.noneMatch(s -> true);
+
     }
 
     @Test
@@ -397,7 +403,7 @@ public class StreamsSuite {
                 .stream()
                 .collect(Collectors.averagingInt(p -> p.age));
 
-        assertEquals(averageAge, 19D, 0D);
+        assertEquals(averageAge, new Double(19));
 
     }
 
