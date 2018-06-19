@@ -213,6 +213,41 @@ public class CompletableFutureSuite {
         }
     }
 
+    class Persona{
+        String nombre;
+        int edad;
+        Persona(String nombre , int edad){
+            this.nombre = nombre;
+            this.edad = edad;
+        }
+    }
+
+    @Test
+    public void ejemploPersona(){
+        CompletableFuture<Persona> completableFuturePersona = CompletableFuture
+                .supplyAsync(() -> {
+                    return "cynthia.22";
+                })
+                .thenCompose(s -> {
+                    int index = s.indexOf(".");
+                    int tam = s.length();
+                    String nombre = s.substring(0,index);
+                    String edadString = s.substring(index+1,s.length());
+                    int edad = Integer.parseInt(edadString);
+                    return CompletableFuture.supplyAsync(() -> {
+                        Persona persona = new Persona(nombre, edad);
+                        return persona;
+                    });
+                });
+        try{
+            Persona persona = completableFuturePersona.get();
+            assertEquals("cynthia", persona.nombre);
+            assertEquals(22,persona.edad);
+        }catch (Exception e){
+            assertTrue(false);
+        }
+    }
+
     @Test
     public void t9(){
 
@@ -221,10 +256,19 @@ public class CompletableFutureSuite {
 
         // El segundo parametro de thenCombina es un BiFunction la cual sí tiene que tener retorno.
         CompletableFuture<String> completableFuture = CompletableFuture
-                .supplyAsync(() -> "Hello")
+                .supplyAsync(() -> {
+                    System.out.println(testName +" - s1 en el thread "+ Thread.currentThread().getName());
+                    return "Hello";
+                })
                 .thenCombine(
-                        CompletableFuture.supplyAsync(() -> " World"),
-                        (s1, s2) -> s1 + s2
+                        CompletableFuture.supplyAsync(() -> {
+                            System.out.println(testName +" - s2 en el thread "+ Thread.currentThread().getName());
+                            return " World";
+                        }),
+                        (s1, s2) -> {
+                            System.out.println(testName +" - s1 + s2 en el thread " + Thread.currentThread().getName());
+                            return s1+s2;
+                        }
                 );
 
         try {
@@ -252,6 +296,8 @@ public class CompletableFutureSuite {
 
         }
     }
+
+ 
 
     @Test
     public void t11(){
