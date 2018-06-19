@@ -33,6 +33,11 @@ public class EitherSuite {
         assertTrue("Valide swap after in Either Right", myEitherR.swap().isLeft());
         assertTrue("Valide swap before in Either Left", myEitherL.isLeft());
         assertTrue("Valide swap after in Either Right", myEitherL.swap().isRight());
+
+        assertFalse("Valide swap before in Either Right", !myEitherR.isRight());
+        assertFalse("Valide swap after in Either Right", !myEitherR.swap().isLeft());
+        assertFalse("Valide swap before in Either Left", !myEitherL.isLeft());
+        assertFalse("Valide swap after in Either Right", !myEitherL.swap().isRight());
     }
 
     /**
@@ -51,6 +56,13 @@ public class EitherSuite {
 
         //El Either para operar el lado izquierdo se debe usar un mapLeft.
         assertEquals("Failure - Left Projection", Left(10), e2.mapLeft(it -> it + 5));
+    }
+
+    @Test
+    public void testMapLeft() {
+        Either<Integer,Integer> e1 = Either.left(5);
+
+        assertEquals(Left(10), e1.mapLeft(it -> it +5));
     }
 
     /**
@@ -94,6 +106,49 @@ public class EitherSuite {
 
     }
 
+
+    private Either<String, Integer> sumar(Integer x, Integer y){
+        Either<String,Integer> res = Either.right(x+y);
+        return res;
+    }
+
+    private Either<String, Integer> restar(Integer x, Integer y){
+        Either<String,Integer> res = x > y ?Either.right(x-y) : Either.left("Numero negativo");
+        return res;
+    }
+
+    @Test
+    public void testExercise(){
+        Either<String,Integer> e1 = sumar(3 ,2);
+        assertEquals(Right(5), e1.flatMap(e -> e1));
+
+        Either<String, Integer> e2 = sumar(1, 2)//3
+                .flatMap( a -> sumar(a,4)//7
+                        .flatMap(b -> sumar(b,5)//12
+                                .flatMap(c -> restar(c,3)))//9
+        );
+
+        assertEquals(Right(9),e2);
+    }
+
+    @Test
+    public void testExerciseFail(){
+        Either<String,Integer> e1 = sumar(3 ,2);
+        assertEquals(Right(5), e1.flatMap(e -> e1));
+
+        Either<String, Integer> e2 = sumar(1, 2)//3
+                .flatMap( a -> sumar(a,4)//7
+                        .flatMap(b -> sumar(b,5)//12
+                                .flatMap(c -> restar(c,13)))//9
+                );
+
+        assertEquals(Left("Numero negativo"),e2);
+    }
+
+
+
+
+
     /**
      * Un Either puede ser filtrado, y en el predicado se pone la condicion
      */
@@ -104,6 +159,16 @@ public class EitherSuite {
 
         assertEquals("value is even",
                 None(),
+                value.filter(it -> it % 2 == 0));
+    }
+
+    @Test
+    public void testEitherFilterToSome() {
+
+        Either<String,Integer> value = Either.right(8);
+
+        assertEquals("value is even",
+                Some(Right(8)),
                 value.filter(it -> it % 2 == 0));
     }
 
@@ -149,7 +214,7 @@ public class EitherSuite {
         };
         myEitherR.orElseRun(addIfTrue);
         assertEquals("Valide swap before in Either Right",
-                "let's dance! ", result[0]);
+                "let's dance! String", result[0]);
         myEitherL.orElseRun(addIfTrue);
         assertEquals("Valide swap before in Either Right",
                 "let's dance! 14", result[0]);
@@ -183,6 +248,36 @@ public class EitherSuite {
         myEitherL.peekLeft(myConsumer);
         assertEquals("Validete Either with peek","foo", valor[0]);
     }
+
+    public class byPeek<L,R>{
+         /*@param <L> The type of the Left consumer of an Either.
+            @param <R> The type of the Right consumer of an Either.
+         */
+           public  Either<L,R> byPeek(Consumer<? super L> cl, Consumer<? super R> cr, Either<L,R> e){
+               return e.isRight() ? e.peek(cr) : e.peekLeft(cl);
+         }
+    }
+
+    @Test
+    public void testByPeek(){
+        Either<Integer,String> el = Either.right("1");
+        byPeek bp = new byPeek();
+        Consumer<Integer> cl = elem -> {
+            System.out.println("Consumer por la izquierda");
+        };
+        Consumer<String> cr = elem -> {
+            System.out.println("Consumer por la derecha");
+        };
+        Either ef = bp.byPeek(cl, cr, el);
+
+    }
+
+
+
+
+
+
+
 
     /**
      * Uso de pattern matching para capturar un Either.Left
