@@ -310,35 +310,33 @@ public class ValidationSuite
 
     class myClass2{
 
+        Integer[] cont = {0,0}; //Valid, Invalid
+
+
+        public Validation<Error,String> esValido(Validation<Error,String> str){
+            if(str.isValid()){
+                cont[0] = cont[0] + 1;
+
+            }else{
+                cont[1] = cont[1] + 1;
+            }
+            return str;
+        }
     }
 
     @Test
     public void testExercise(){
-        ArrayList<String> msg = new ArrayList<>();
-        List<Validation<Error,String>> validation = List.of(
-                Validation.valid("Juan"),
-                Validation.invalid(new Error("Erroooor")),
-                Validation.valid("Cubaque"),
-                Validation.invalid(new Error("Stop!")),
-                Validation.valid("Samuel")
-        );
+        Validation<Error,String> v1 = Validation.valid("Juan");
+        Validation<Error,String> v2 = Validation.invalid(new Error("Erroooor"));
+        Validation<Error,String> v3 = Validation.valid("Cubaque");
+        Validation<Error,String> v4 = Validation.invalid(new Error("Stop!"));
+        Validation<Error,String> v5 = Validation.valid("Samuel");
 
-        Integer[] cont = {0,0}; //Validate, Invalidate
+        myClass2 c = new myClass2();
+        Validation.Builder5<Error, String, String, String, String, String> combine = Validation.combine(c.esValido(v1), c.esValido(v2), c.esValido(v3), c.esValido(v4), c.esValido(v5));
 
-        Consumer<Validation<Error,String>> consumer = s -> {
-            if (s.isValid()) {
-                cont[0] = cont[0] + 1;
-            } else {
-                cont[1] = cont[1] + 1;
-            }
-        };
-
-        validation.forEach(consumer);
-        assertEquals("Diferente validaciones a las esperadas",new Integer(3) ,cont[0]);
-        assertEquals("Diferente Invalidos a los esperados",new Integer(2) ,cont[1]);
-
-        Validation.Builder5<Error, String, String, String, String, String> combine = Validation.combine(validation.get(5), validation.get(1), validation.get(2), validation.get(3), validation.get(4));
-
+        assertEquals("EL numero de validos no coincide", new Integer(3), c.cont[0]);
+        assertEquals("EL numero de validos no coincide", new Integer(2), c.cont[1]);
     }
 
     /**
