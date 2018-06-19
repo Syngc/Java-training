@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import co.com.s4n.training.java.Operaciones;
 import io.vavr.CheckedFunction1;
 import io.vavr.CheckedFunction2;
 import io.vavr.Function1;
@@ -12,10 +13,11 @@ import static junit.framework.TestCase.assertEquals;
 import io.vavr.PartialFunction;
 import java.util.ArrayList;
 import java.util.stream.Stream;
-
-import java.util.List;
+import io.vavr.collection.List;
+//import java.util.List;
 import java.util.function.Consumer;
 import static io.vavr.control.Try.failure;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TrySuite {
@@ -33,8 +35,11 @@ public class TrySuite {
                 Success(3),
                 myTrySuccess);
 
+        assertNotEquals(3, myTrySuccess);
+
         assertTrue("failed - the values is a Failure",
                 myTryFailure.isFailure());
+
     }
 
     private String patternMyTry(Try<Integer> myTry) {
@@ -117,6 +122,24 @@ public class TrySuite {
                 "5 example of text",
                 transform);
     }
+
+    @Test
+    public void testSuccessTransform2() {
+        Try<Integer> number = Try.of(() -> 5);
+        Try<Integer> transform = number.transform(self -> self);
+
+        assertEquals("Failure - it should transform the number to text",
+                Success(5),
+                transform);
+    }
+
+    @Test
+    public void testMap(){
+        Try<Integer>  s = Try.of(() -> "Aloha")
+                                .map(x -> x.length());
+        assertEquals(Success(5),s);
+    }
+
 
     /**
      * La funcionalidad transform va a generar error sobre un try con error.
@@ -238,6 +261,7 @@ public class TrySuite {
      * La funcionalidad peek permite realizar una acción dependiendo de
      * una condición.
      */
+    /*
     @Test
     public void testErrorPeek() {
         final List<String> tmp = new ArrayList<>();
@@ -251,12 +275,13 @@ public class TrySuite {
         assertEquals("Failure - it should not add the element",
                 true,
                 tmp.isEmpty());
-    }
+    }*/
 
     /**
      * La funcionalidad peek permite realizar una acción dependiendo de
      * una condición.
      */
+    /*
     @Test
     public void testSuccessPeek() {
         final List<String> tmp = new ArrayList<>();
@@ -270,7 +295,7 @@ public class TrySuite {
         assertEquals("Failure - it should add the element",
                 "element",
                 tmp.get(0));
-    }
+    }*/
 
     /**
      * Validar el uso de Map para transformar un Try de String en otro String con mas informacion
@@ -355,6 +380,83 @@ public class TrySuite {
         };
         Try<Integer> aTry = Try.of(() -> 2).mapTry(checkedFunction1);
         assertEquals("Failed the checkedFuntion", Success(1),aTry);
+    }
+
+    private Try<Integer> sumar(Integer a,  Integer b){
+        return Try.of(() -> (a + b));
+    }
+
+    private Try<Integer> dividir(Integer a, Integer b){
+        return Try.of(() -> (a / b));
+    }
+
+    @Test
+    public void testMonadicCompositionFlatmap(){
+        Try<Integer> res = sumar(1, 2)
+                .flatMap(r0 -> sumar(r0, r0)
+                    .flatMap(r1 -> sumar(r1, -6)
+                        .flatMap(r2 -> dividir(r2, r2))));
+
+        assertTrue(res.isFailure());
+    }
+
+    @Test
+    public void testMonadicCompositionFor(){
+        Try<Integer> n = For(sumar(1, 2), r0 ->
+                            For(sumar(r0, r0), r1 ->
+                                For(sumar(r1, -6), r2 -> dividir(r2, r2)))).toTry();
+        assertTrue(n.isFailure());
+    }
+
+    @Test
+    public void testMonadicCompositionRecovery(){
+        Try<Integer> n = For(sumar(1, 2), r0 ->
+                For(sumar(r0, r0), r1 ->
+                        For(sumar(r1, -6), r2 -> dividir(0, 0).recover(ArithmeticException.class, e ->-1)))).toTry();
+
+    assertEquals(Success(-1), n);
+    }
+
+    private Try<Integer> dividirRecoverWith(Integer a , Integer b){
+        return Try.of(() -> (a / b)).recoverWith(ArithmeticException.class,Try.of(() ->  -1));
+    }
+
+    @Test
+    public void testMonadicCompositionRecoverWith(){
+        Try<Integer> n = For(sumar(1, 2), r0 ->
+                For(sumar(r0, r0), r1 ->
+                        For(sumar(r1, -6), r2 -> dividirRecoverWith(0, 0)))).toTry();
+        assertEquals(Success(-1), n);
+    }
+
+    //Ejercicio Try
+
+    @Test
+    public void ejercicioFlagMap(){
+        String x = "Hi";
+        Try<List<String>> r1 = Try.of(() -> Operaciones.reemplazar(x, "H", "A")).recover(Exception.class, e -> "*")
+                .flatMap(a ->Try.of(()->  Operaciones.reemplazar(a,"i","l")).recover(Exception.class, e -> "*")
+                        .flatMap(b -> Try.of(() -> Operaciones.concatenar(b, "o")).recover(Exception.class, e -> "~")
+                                .flatMap(c -> Try.of(() -> Operaciones.concatenar(c, "h")).recover(Exception.class, e -> "~")
+                                        .flatMap(d -> Try.of(() -> Operaciones.concatenar(d, "a")).recover(Exception.class, e -> "~")
+                                        .flatMap(e -> Try.of(() ->Operaciones.agregar(List.of(e)," Mundo")))))));
+
+        Try<String> r2 = Try.of(() -> Operaciones.concatenar("", "")).recover(Exception.class, e -> "empty");
+        assertEquals(Try.of(()-> List.of("Aloha"," Mundo")),r1);
+    }
+
+    @Test
+    public void ejercicioFlagMapException(){
+        String x = "Hi";
+        Try<List<String>> r1 = Try.of(() -> Operaciones.reemplazar(x, "H", ""))
+                .flatMap(a ->Try.of(()->  Operaciones.reemplazar(a,"",""))
+                        .flatMap(b -> Try.of(() -> Operaciones.concatenar(b, "o"))
+                                .flatMap(c -> Try.of(() -> Operaciones.concatenar(c, "h"))
+                                        .flatMap(d -> Try.of(() -> Operaciones.concatenar(d, "a"))
+                                                .flatMap(e -> Try.of(() ->Operaciones.agregar(List.of(e)," Mundo"))))))).recover(Exception.class, e -> List.of(""));
+
+        Try<String> r2 = Try.of(() -> Operaciones.concatenar("", "")).recover(Exception.class, e -> "empty");
+        assertEquals(Try.of(()-> List.of("A*oha"," Mundo")),r1);
     }
 
 }
